@@ -557,6 +557,9 @@ struct Compiler
         case AstExprBinary::Pow:
             return k ? LOP_POWK : LOP_POW;
 
+        case AstExprBinary::BitwiseAnd:
+            return LOP_BAND;
+
         default:
             LUAU_ASSERT(!"Unexpected binary operation");
             return LOP_NOP;
@@ -3040,6 +3043,14 @@ struct Compiler
                 if (la.type != Constant::Type_Unknown)
                 {
                     result = la.isTruthful() ? la : ra;
+                }
+                break;
+
+            case AstExprBinary::BitwiseAnd:
+                if (la.type == Constant::Type_Number && ra.type == Constant::Type_Number)
+                {
+                    result.type = Constant::Type_Number;
+                    result.valueNumber = int(la.valueNumber) & int(ra.valueNumber);
                 }
                 break;
 

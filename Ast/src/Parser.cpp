@@ -1631,6 +1631,8 @@ std::optional<AstExprBinary::Op> Parser::parseBinaryOp(const Lexeme& l)
         return AstExprBinary::And;
     else if (l.type == Lexeme::ReservedOr)
         return AstExprBinary::Or;
+    else if (l.type == '&')
+        return AstExprBinary::BitwiseAnd;
     else
         return std::nullopt;
 }

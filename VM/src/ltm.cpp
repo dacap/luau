@@ -47,6 +47,8 @@ const char* const luaT_eventname[] = {
     "__mod",
     "__pow",
     "__unm",
+    "__band",
+
 
     
     "__len",

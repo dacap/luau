@@ -439,6 +439,8 @@ struct AstJsonEncoder : public AstVisitor
             return writeString("And");
         case AstExprBinary::Or:
             return writeString("Or");
+        case AstExprBinary::BitwiseAnd:
+            return writeString("BAnd");
         }
     }
 

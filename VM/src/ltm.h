@@ -27,6 +27,8 @@ typedef enum
     TM_MOD,
     TM_POW,
     TM_UNM,
+    TM_BAND,
+
 
     
     TM_LEN,

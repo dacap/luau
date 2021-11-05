@@ -654,7 +654,8 @@ public:
         CompareGt,
         CompareGe,
         And,
-        Or
+        Or,
+        BitwiseAnd
     };
 
     AstExprBinary(const Location& location, Op op, AstExpr* left, AstExpr* right);

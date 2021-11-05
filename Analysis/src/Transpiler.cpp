@@ -531,6 +531,7 @@ struct Printer
             case AstExprBinary::Pow:
             case AstExprBinary::CompareLt:
             case AstExprBinary::CompareGt:
+            case AstExprBinary::BitwiseAnd:
                 writer.maybeSpace(a->right->location.begin, 2);
                 break;
             case AstExprBinary::Concat:

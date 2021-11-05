@@ -353,6 +353,8 @@ enum LuauOpcode
     // AUX: constant index
     LOP_FASTCALL2K,
 
+    LOP_BAND,
+
     // Enum entry for number of opcodes, not a valid opcode by itself!
     LOP__COUNT
 };

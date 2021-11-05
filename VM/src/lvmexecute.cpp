@@ -104,7 +104,8 @@ LUAU_FASTFLAGVARIABLE(LuauLoopUseSafeenv, false)
         VM_DISPATCH_OP(LOP_FORGLOOP_NEXT), VM_DISPATCH_OP(LOP_GETVARARGS), VM_DISPATCH_OP(LOP_DUPCLOSURE), VM_DISPATCH_OP(LOP_PREPVARARGS), \
         VM_DISPATCH_OP(LOP_LOADKX), VM_DISPATCH_OP(LOP_JUMPX), VM_DISPATCH_OP(LOP_FASTCALL), VM_DISPATCH_OP(LOP_COVERAGE), \
         VM_DISPATCH_OP(LOP_CAPTURE), VM_DISPATCH_OP(LOP_JUMPIFEQK), VM_DISPATCH_OP(LOP_JUMPIFNOTEQK), VM_DISPATCH_OP(LOP_FASTCALL1), \
-        VM_DISPATCH_OP(LOP_FASTCALL2), VM_DISPATCH_OP(LOP_FASTCALL2K),
+        VM_DISPATCH_OP(LOP_FASTCALL2), VM_DISPATCH_OP(LOP_FASTCALL2K), \
+        VM_DISPATCH_OP(LOP_BAND),
 
 #if defined(__GNUC__) || defined(__clang__)
 #define VM_USE_CGOTO 1
@@ -2839,6 +2840,52 @@ static void luau_execute(lua_State* L)
                 }
 
                 VM_CONTINUE(op);
+            }
+
+            VM_CASE(LOP_BAND)
+            {
+                Instruction insn = *pc++;
+                StkId ra = VM_REG(LUAU_INSN_A(insn));
+                StkId rb = VM_REG(LUAU_INSN_B(insn));
+                StkId rc = VM_REG(LUAU_INSN_C(insn));
+
+                // fast-path
+                if (ttisnumber(rb) && ttisnumber(rc))
+                {
+                    setnvalue(ra, int(nvalue(rb)) & int(nvalue(rc)));
+                    VM_NEXT();
+                }
+                else if (ttisvector(rb) && ttisvector(rc))
+                {
+                    const float* vb = rb->value.v;
+                    const float* vc = rc->value.v;
+                    setvvalue(ra, int(vb[0]) & int(vc[0]), int(vb[1]) & int(vc[1]), int(vb[2]) & int(vc[2]));
+                    VM_NEXT();
+                }
+                else
+                {
+                    // fast-path for userdata with C functions
+                    const TValue* fn = 0;
+                    if (ttisuserdata(rb) && (fn = luaT_gettmbyobj(L, rb, TM_BAND)) && ttisfunction(fn) && clvalue(fn)->isC)
+                    {
+                        // note: it's safe to push arguments past top for complicated reasons (see top of the file)
+                        LUAU_ASSERT(L->top + 3 < L->stack + L->stacksize);
+                        StkId top = L->top;
+                        setobj2s(L, top + 0, fn);
+                        setobj2s(L, top + 1, rb);
+                        setobj2s(L, top + 2, rc);
+                        L->top = top + 3;
+
+                        VM_PROTECT(luau_callTM(L, 2, LUAU_INSN_A(insn)));
+                        VM_NEXT();
+                    }
+                    else
+                    {
+                        // slow-path, may invoke C/Lua via metamethods
+                        VM_PROTECT(luaV_doarith(L, ra, rb, rc, TM_BAND));
+                        VM_NEXT();
+                    }
+                }
             }
 
 #if !VM_USE_CGOTO

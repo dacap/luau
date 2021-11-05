@@ -11,6 +11,7 @@
 #define luai_numdiv(a, b) ((a) / (b))
 #define luai_numpow(a, b) (pow(a, b))
 #define luai_numunm(a) (-(a))
+#define luai_numband(a, b) ((a) & (b))
 #define luai_numisnan(a) ((a) != (a))
 #define luai_numeq(a, b) ((a) == (b))
 #define luai_numlt(a, b) ((a) < (b))

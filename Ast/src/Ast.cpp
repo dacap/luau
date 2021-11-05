@@ -301,6 +301,8 @@ std::string toString(AstExprBinary::Op op)
         return "and";
     case AstExprBinary::Or:
         return "or";
+    case AstExprBinary::BitwiseAnd:
+        return "&";
     default:
         LUAU_ASSERT(false);
         return ""; // MSVC requires this even though the switch/case is exhaustive
